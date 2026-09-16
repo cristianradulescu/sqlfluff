@@ -4160,3 +4160,39 @@ class ShowStatementSegment(BaseSegment):
             ),
         ),
     )
+
+
+class DescribeStatementSegment(ansi.DescribeStatementSegment):
+    """An `EXPLAIN` / `DESCRIBE` / `DESC` statement addressing a table.
+
+    `EXPLAIN`/`DESCRIBE`/`DESC` are full synonyms here. `EXPLAIN`/
+    `DESCRIBE`/`DESC` addressing a *statement* instead of a table is
+    handled separately by ``ExplainStatementSegment``.
+
+    https://dev.mysql.com/doc/refman/8.0/en/explain.html
+    """
+
+    match_grammar: Matchable = Sequence(
+        OneOf("EXPLAIN", "DESCRIBE", "DESC"),
+        Ref("TableReferenceSegment"),
+        OneOf(
+            Ref("ColumnReferenceSegment"),
+            Ref("QuotedLiteralSegment"),
+            optional=True,
+        ),
+    )
+
+
+class ExplainStatementSegment(ansi.ExplainStatementSegment):
+    """An `EXPLAIN` / `DESCRIBE` / `DESC` statement addressing a query.
+
+    `DESCRIBE` and `DESC` are synonyms for `EXPLAIN` when addressing a
+    statement (as opposed to a table, see ``DescribeStatementSegment``).
+
+    https://dev.mysql.com/doc/refman/8.0/en/explain.html
+    """
+
+    match_grammar: Matchable = Sequence(
+        OneOf("EXPLAIN", "DESCRIBE", "DESC"),
+        ansi.ExplainStatementSegment.explainable_stmt,
+    )

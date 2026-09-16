@@ -1757,6 +1757,7 @@ class StatementSegment(ansi.StatementSegment):
             Ref("AlterEventStatementSegment"),
             Ref("DropEventStatementSegment"),
             Ref("SetDefaultRoleStatementSegment"),
+            Ref("ShowStatementSegment"),
         ],
         remove=[
             # handle CREATE SCHEMA in CreateDatabaseStatementSegment
@@ -3927,4 +3928,235 @@ class NullSafeEqualsSegment(CompositeComparisonOperatorSegment):
         Ref("RawEqualsSegment"),
         Ref("RawGreaterThanSegment"),
         allow_gaps=False,
+    )
+
+
+def _mysql_show_from_in(ref_name: str, *, optional: bool = True) -> Matchable:
+    """The `{FROM | IN} <ref>` suffix shared by many `SHOW` statements."""
+    return Sequence(
+        OneOf("FROM", "IN"),
+        Ref(ref_name),
+        optional=optional,
+    )
+
+
+def _mysql_show_like_or_where() -> Matchable:
+    """The trailing `LIKE 'pattern'` / `WHERE expr` shared by many `SHOW` statements."""
+    return Sequence(
+        OneOf(
+            Sequence("LIKE", Ref("QuotedLiteralSegment")),
+            Ref("WhereClauseSegment"),
+        ),
+        optional=True,
+    )
+
+
+class ShowStatementSegment(BaseSegment):
+    """A `SHOW` statement.
+
+    MySQL's `SHOW` covers a large, heterogeneous family of introspection
+    commands, documented in full at:
+    https://dev.mysql.com/doc/refman/8.0/en/show.html
+    """
+
+    type = "show_statement"
+
+    match_grammar: Matchable = Sequence(
+        "SHOW",
+        OneOf(
+            # SHOW BINARY LOGS | SHOW MASTER LOGS
+            Sequence(OneOf("BINARY", "MASTER"), "LOGS"),
+            # SHOW BINARY LOG STATUS
+            Sequence("BINARY", "LOG", "STATUS"),
+            # SHOW BINLOG EVENTS [IN 'log_name'] [FROM pos] [LIMIT ...]
+            Sequence(
+                "BINLOG",
+                "EVENTS",
+                Sequence("IN", Ref("QuotedLiteralSegment"), optional=True),
+                Sequence("FROM", Ref("NumericLiteralSegment"), optional=True),
+                Ref("LimitClauseSegment", optional=True),
+            ),
+            # SHOW {CHARACTER SET | CHARSET} [like_or_where]
+            Sequence(
+                OneOf(Sequence("CHARACTER", "SET"), "CHARSET"),
+                _mysql_show_like_or_where(),
+            ),
+            # SHOW COLLATION [like_or_where]
+            Sequence("COLLATION", _mysql_show_like_or_where()),
+            # SHOW [EXTENDED] [FULL] {COLUMNS | FIELDS} FROM tbl [FROM db] [like_or_where]
+            Sequence(
+                Sequence("EXTENDED", optional=True),
+                Sequence("FULL", optional=True),
+                OneOf("COLUMNS", "FIELDS"),
+                _mysql_show_from_in("TableReferenceSegment", optional=False),
+                _mysql_show_from_in("DatabaseReferenceSegment"),
+                _mysql_show_like_or_where(),
+            ),
+            # SHOW CREATE {DATABASE | EVENT | FUNCTION | PROCEDURE | TABLE
+            #             | TRIGGER | USER | VIEW} name
+            Sequence(
+                "CREATE",
+                OneOf(
+                    Sequence(
+                        OneOf("DATABASE", "SCHEMA"),
+                        Ref("DatabaseReferenceSegment"),
+                    ),
+                    Sequence("EVENT", Ref("ObjectReferenceSegment")),
+                    Sequence("FUNCTION", Ref("FunctionNameSegment")),
+                    Sequence("PROCEDURE", Ref("ObjectReferenceSegment")),
+                    Sequence("TABLE", Ref("TableReferenceSegment")),
+                    Sequence("TRIGGER", Ref("TriggerReferenceSegment")),
+                    Sequence("USER", Ref("RoleReferenceSegment")),
+                    Sequence("VIEW", Ref("TableReferenceSegment")),
+                ),
+            ),
+            # SHOW {DATABASES | SCHEMAS} [like_or_where]
+            Sequence(OneOf("DATABASES", "SCHEMAS"), _mysql_show_like_or_where()),
+            # SHOW ENGINE engine_name {STATUS | MUTEX}
+            Sequence(
+                "ENGINE",
+                Ref("SingleIdentifierGrammar"),
+                OneOf("STATUS", "MUTEX"),
+            ),
+            # SHOW [STORAGE] ENGINES
+            Sequence(Sequence("STORAGE", optional=True), "ENGINES"),
+            # SHOW COUNT(*) {ERRORS | WARNINGS}
+            Sequence(
+                "COUNT",
+                Bracketed(Ref("StarSegment")),
+                OneOf("ERRORS", "WARNINGS"),
+            ),
+            # SHOW ERRORS [LIMIT ...]
+            Sequence("ERRORS", Ref("LimitClauseSegment", optional=True)),
+            # SHOW WARNINGS [LIMIT ...]
+            Sequence("WARNINGS", Ref("LimitClauseSegment", optional=True)),
+            # SHOW EVENTS [FROM db] [like_or_where]
+            Sequence(
+                "EVENTS",
+                _mysql_show_from_in("DatabaseReferenceSegment"),
+                _mysql_show_like_or_where(),
+            ),
+            # SHOW FUNCTION CODE func_name
+            Sequence("FUNCTION", "CODE", Ref("FunctionNameSegment")),
+            # SHOW FUNCTION STATUS [like_or_where]
+            Sequence("FUNCTION", "STATUS", _mysql_show_like_or_where()),
+            # SHOW GRANTS [FOR user_or_role [USING role [, role] ...]]
+            Sequence(
+                "GRANTS",
+                Sequence(
+                    "FOR",
+                    Ref("RoleReferenceSegment"),
+                    Sequence(
+                        "USING",
+                        Delimited(Ref("RoleReferenceSegment")),
+                        optional=True,
+                    ),
+                    optional=True,
+                ),
+            ),
+            # SHOW {INDEX | INDEXES | KEYS} FROM tbl [FROM db] [WHERE expr]
+            Sequence(
+                OneOf("INDEX", "INDEXES", "KEYS"),
+                _mysql_show_from_in("TableReferenceSegment", optional=False),
+                _mysql_show_from_in("DatabaseReferenceSegment"),
+                Ref("WhereClauseSegment", optional=True),
+            ),
+            # SHOW MASTER STATUS
+            Sequence("MASTER", "STATUS"),
+            # SHOW OPEN TABLES [FROM db] [like_or_where]
+            Sequence(
+                "OPEN",
+                "TABLES",
+                _mysql_show_from_in("DatabaseReferenceSegment"),
+                _mysql_show_like_or_where(),
+            ),
+            # SHOW PLUGINS
+            "PLUGINS",
+            # SHOW PRIVILEGES
+            "PRIVILEGES",
+            # SHOW PROCEDURE CODE proc_name
+            Sequence("PROCEDURE", "CODE", Ref("ObjectReferenceSegment")),
+            # SHOW PROCEDURE STATUS [like_or_where]
+            Sequence("PROCEDURE", "STATUS", _mysql_show_like_or_where()),
+            # SHOW [FULL] PROCESSLIST
+            Sequence(Sequence("FULL", optional=True), "PROCESSLIST"),
+            # SHOW PROFILE [types] [FOR QUERY n] [OFFSET n] [LIMIT n]
+            Sequence(
+                "PROFILE",
+                Delimited(
+                    OneOf(
+                        "ALL",
+                        Sequence("BLOCK", "IO"),
+                        Sequence("CONTEXT", "SWITCHES"),
+                        "CPU",
+                        "IPC",
+                        "MEMORY",
+                        Sequence("PAGE", "FAULTS"),
+                        "SOURCE",
+                        "SWAPS",
+                    ),
+                    optional=True,
+                ),
+                Sequence(
+                    "FOR", "QUERY", Ref("NumericLiteralSegment"), optional=True
+                ),
+                Sequence("OFFSET", Ref("NumericLiteralSegment"), optional=True),
+                Ref("LimitClauseSegment", optional=True),
+            ),
+            # SHOW PROFILES
+            "PROFILES",
+            # SHOW RELAYLOG EVENTS [IN 'log'] [FROM pos] [LIMIT ...] [FOR CHANNEL channel]
+            Sequence(
+                "RELAYLOG",
+                "EVENTS",
+                Sequence("IN", Ref("QuotedLiteralSegment"), optional=True),
+                Sequence("FROM", Ref("NumericLiteralSegment"), optional=True),
+                Ref("LimitClauseSegment", optional=True),
+                Sequence(
+                    "FOR", "CHANNEL", Ref("QuotedLiteralSegment"), optional=True
+                ),
+            ),
+            # SHOW REPLICAS
+            "REPLICAS",
+            # SHOW REPLICA STATUS [FOR CHANNEL channel]
+            Sequence(
+                "REPLICA",
+                "STATUS",
+                Sequence(
+                    "FOR", "CHANNEL", Ref("QuotedLiteralSegment"), optional=True
+                ),
+            ),
+            # SHOW [GLOBAL | SESSION] STATUS [like_or_where]
+            Sequence(
+                OneOf("GLOBAL", "SESSION", optional=True),
+                "STATUS",
+                _mysql_show_like_or_where(),
+            ),
+            # SHOW TABLE STATUS [FROM db] [like_or_where]
+            Sequence(
+                "TABLE",
+                "STATUS",
+                _mysql_show_from_in("DatabaseReferenceSegment"),
+                _mysql_show_like_or_where(),
+            ),
+            # SHOW [FULL] TABLES [FROM db] [like_or_where]
+            Sequence(
+                Sequence("FULL", optional=True),
+                "TABLES",
+                _mysql_show_from_in("DatabaseReferenceSegment"),
+                _mysql_show_like_or_where(),
+            ),
+            # SHOW TRIGGERS [FROM db] [like_or_where]
+            Sequence(
+                "TRIGGERS",
+                _mysql_show_from_in("DatabaseReferenceSegment"),
+                _mysql_show_like_or_where(),
+            ),
+            # SHOW [GLOBAL | SESSION] VARIABLES [like_or_where]
+            Sequence(
+                OneOf("GLOBAL", "SESSION", optional=True),
+                "VARIABLES",
+                _mysql_show_like_or_where(),
+            ),
+        ),
     )

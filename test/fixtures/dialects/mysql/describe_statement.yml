@@ -1,0 +1,336 @@
+# YML test files are auto-generated from SQL files and should not be edited by
+# hand. To help enforce this, the "hash" field in the file must match a hash
+# computed by SQLFluff when running the tests. Please run
+# `python test/generate_parse_fixture_yml.py`  to generate them after adding or
+# altering SQL files.
+_hash: fbe79b9dc1666fddd62396e9e1e399c6cba2b833871910fa9a6b92ca7887bb42
+file:
+- statement:
+    describe_statement:
+      keyword: DESCRIBE
+      table_reference:
+        naked_identifier: employees
+- statement_terminator: ;
+- statement:
+    describe_statement:
+      keyword: DESC
+      table_reference:
+        naked_identifier: employees
+- statement_terminator: ;
+- statement:
+    describe_statement:
+      keyword: EXPLAIN
+      table_reference:
+        naked_identifier: employees
+- statement_terminator: ;
+- statement:
+    describe_statement:
+      keyword: DESCRIBE
+      table_reference:
+        naked_identifier: employees
+      column_reference:
+        naked_identifier: emp_no
+- statement_terminator: ;
+- statement:
+    describe_statement:
+      keyword: DESC
+      table_reference:
+        naked_identifier: employees
+      column_reference:
+        naked_identifier: emp_no
+- statement_terminator: ;
+- statement:
+    describe_statement:
+      keyword: EXPLAIN
+      table_reference:
+        naked_identifier: employees
+      column_reference:
+        naked_identifier: emp_no
+- statement_terminator: ;
+- statement:
+    describe_statement:
+      keyword: DESCRIBE
+      table_reference:
+        naked_identifier: employees
+      quoted_literal: "'emp_%'"
+- statement_terminator: ;
+- statement:
+    describe_statement:
+      keyword: DESC
+      table_reference:
+        naked_identifier: employees
+      quoted_literal: "'emp_%'"
+- statement_terminator: ;
+- statement:
+    describe_statement:
+      keyword: EXPLAIN
+      table_reference:
+        naked_identifier: employees
+      quoted_literal: "'emp_%'"
+- statement_terminator: ;
+- statement:
+    explain_statement:
+      keyword: DESCRIBE
+      select_statement:
+        select_clause:
+          keyword: SELECT
+          select_clause_element:
+            numeric_literal: '1'
+- statement_terminator: ;
+- statement:
+    explain_statement:
+      keyword: DESC
+      select_statement:
+        select_clause:
+          keyword: SELECT
+          select_clause_element:
+            wildcard_expression:
+              wildcard_identifier:
+                star: '*'
+        from_clause:
+          keyword: FROM
+          from_expression:
+            from_expression_element:
+              table_expression:
+                table_reference:
+                  naked_identifier: employees
+- statement_terminator: ;
+- statement:
+    explain_statement:
+      keyword: EXPLAIN
+      select_statement:
+        select_clause:
+          keyword: SELECT
+          select_clause_element:
+            wildcard_expression:
+              wildcard_identifier:
+                star: '*'
+        from_clause:
+          keyword: FROM
+          from_expression:
+            from_expression_element:
+              table_expression:
+                table_reference:
+                  naked_identifier: employees
+- statement_terminator: ;
+- statement:
+    explain_statement:
+      keyword: DESCRIBE
+      select_statement:
+        select_clause:
+          keyword: SELECT
+          select_clause_element:
+            wildcard_expression:
+              wildcard_identifier:
+                star: '*'
+        from_clause:
+          keyword: FROM
+          from_expression:
+            from_expression_element:
+              table_expression:
+                table_reference:
+                  naked_identifier: employees
+        where_clause:
+          keyword: WHERE
+          expression:
+            column_reference:
+              naked_identifier: emp_no
+            comparison_operator:
+              raw_comparison_operator: '='
+            numeric_literal: '1'
+- statement_terminator: ;
+- statement:
+    explain_statement:
+      keyword: DESCRIBE
+      update_statement:
+        keyword: UPDATE
+        table_reference:
+          naked_identifier: employees
+        set_clause_list:
+          keyword: SET
+          set_clause:
+            column_reference:
+              naked_identifier: first_name
+            comparison_operator:
+              raw_comparison_operator: '='
+            quoted_literal: "'x'"
+        where_clause:
+          keyword: WHERE
+          expression:
+            column_reference:
+              naked_identifier: emp_no
+            comparison_operator:
+              raw_comparison_operator: '='
+            numeric_literal: '1'
+- statement_terminator: ;
+- statement:
+    explain_statement:
+      keyword: DESC
+      update_statement:
+        keyword: UPDATE
+        table_reference:
+          naked_identifier: employees
+        set_clause_list:
+          keyword: SET
+          set_clause:
+            column_reference:
+              naked_identifier: first_name
+            comparison_operator:
+              raw_comparison_operator: '='
+            quoted_literal: "'x'"
+        where_clause:
+          keyword: WHERE
+          expression:
+            column_reference:
+              naked_identifier: emp_no
+            comparison_operator:
+              raw_comparison_operator: '='
+            numeric_literal: '1'
+- statement_terminator: ;
+- statement:
+    explain_statement:
+      keyword: DESCRIBE
+      delete_statement:
+        keyword: DELETE
+        from_clause:
+          keyword: FROM
+          from_expression:
+            from_expression_element:
+              table_expression:
+                table_reference:
+                  naked_identifier: employees
+        where_clause:
+          keyword: WHERE
+          expression:
+            column_reference:
+              naked_identifier: emp_no
+            comparison_operator:
+              raw_comparison_operator: '='
+            numeric_literal: '1'
+- statement_terminator: ;
+- statement:
+    explain_statement:
+      keyword: DESC
+      delete_statement:
+        keyword: DELETE
+        from_clause:
+          keyword: FROM
+          from_expression:
+            from_expression_element:
+              table_expression:
+                table_reference:
+                  naked_identifier: employees
+        where_clause:
+          keyword: WHERE
+          expression:
+            column_reference:
+              naked_identifier: emp_no
+            comparison_operator:
+              raw_comparison_operator: '='
+            numeric_literal: '1'
+- statement_terminator: ;
+- statement:
+    explain_statement:
+      keyword: DESCRIBE
+      insert_statement:
+      - keyword: INSERT
+      - keyword: INTO
+      - table_reference:
+          naked_identifier: employees
+      - bracketed:
+          start_bracket: (
+          column_reference:
+            naked_identifier: emp_no
+          end_bracket: )
+      - values_clause:
+          keyword: VALUES
+          bracketed:
+            start_bracket: (
+            numeric_literal: '1'
+            end_bracket: )
+- statement_terminator: ;
+- statement:
+    explain_statement:
+      keyword: DESC
+      insert_statement:
+      - keyword: INSERT
+      - keyword: INTO
+      - table_reference:
+          naked_identifier: employees
+      - bracketed:
+          start_bracket: (
+          column_reference:
+            naked_identifier: emp_no
+          end_bracket: )
+      - values_clause:
+          keyword: VALUES
+          bracketed:
+            start_bracket: (
+            numeric_literal: '1'
+            end_bracket: )
+- statement_terminator: ;
+- statement:
+    explain_statement:
+      keyword: EXPLAIN
+      update_statement:
+        keyword: UPDATE
+        table_reference:
+          naked_identifier: employees
+        set_clause_list:
+          keyword: SET
+          set_clause:
+            column_reference:
+              naked_identifier: first_name
+            comparison_operator:
+              raw_comparison_operator: '='
+            quoted_literal: "'x'"
+        where_clause:
+          keyword: WHERE
+          expression:
+            column_reference:
+              naked_identifier: emp_no
+            comparison_operator:
+              raw_comparison_operator: '='
+            numeric_literal: '1'
+- statement_terminator: ;
+- statement:
+    explain_statement:
+      keyword: EXPLAIN
+      delete_statement:
+        keyword: DELETE
+        from_clause:
+          keyword: FROM
+          from_expression:
+            from_expression_element:
+              table_expression:
+                table_reference:
+                  naked_identifier: employees
+        where_clause:
+          keyword: WHERE
+          expression:
+            column_reference:
+              naked_identifier: emp_no
+            comparison_operator:
+              raw_comparison_operator: '='
+            numeric_literal: '1'
+- statement_terminator: ;
+- statement:
+    explain_statement:
+      keyword: EXPLAIN
+      insert_statement:
+      - keyword: INSERT
+      - keyword: INTO
+      - table_reference:
+          naked_identifier: employees
+      - bracketed:
+          start_bracket: (
+          column_reference:
+            naked_identifier: emp_no
+          end_bracket: )
+      - values_clause:
+          keyword: VALUES
+          bracketed:
+            start_bracket: (
+            numeric_literal: '1'
+            end_bracket: )
+- statement_terminator: ;
